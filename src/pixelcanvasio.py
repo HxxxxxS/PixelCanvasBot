@@ -82,7 +82,8 @@ class PixelCanvasIO(object):
         try:
             return response.json()
         except Exception as e:
-            raise Exception(I18n.get('only_time') + str(response.text) + '-' + str(response.status_code))
+            print(I18n.get('only_time') + str(response.text) + '-' + str(response.status_code))
+            return {'success':0, 'waitseconds': random.random()*5 + 5}
 
     def download_canvas(self, center_x, center_y):
         x = bytearray(self.get(PixelCanvasIO.API1_URL + 'api/bigchunk/%s.%s.bmp' % (center_x, center_y), stream=True).content)
