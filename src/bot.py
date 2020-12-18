@@ -7,9 +7,9 @@ from .calc_axis import CalcAxis
 from .matrix import Matrix
 from .colors import EnumColor
 from .strategy import FactoryStrategy
+from .storage import Storage
 from .i18n import I18n
 from six.moves import range
-
 
 class Bot(object):
 
@@ -28,6 +28,7 @@ class Bot(object):
         self.colors_not_overwrite = colors_not_overwrite
         self.xreversed = xreversed
         self.yreversed = yreversed
+        self.storage = Storage(fingerprint)
 
     def init(self):
         self.canvas = self.setup_canvas()
@@ -53,6 +54,9 @@ class Bot(object):
             print(I18n.get('try_again'))
             self.wait_time(response)
             response = self.pixelio.send_pixel(x, y, color)
+        self.storage.add()
+        if self.storage.rate_limit():
+            response['waitSeconds'] = 200 + random.random() * 200 # wait 2-400 seconds
         try:
             self.canvas.update(x,y, color)
             print(I18n.get('You painted %s in the %s,%s') % (I18n.get(str(color.name), 'true'), str(x), str(y)))

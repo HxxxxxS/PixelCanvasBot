@@ -88,10 +88,11 @@ class Spiral(Strategy):
             x, y = x+dx, y+dy
         return out
 
-    def __init__(self, bot, colors_ignored, colors_not_overwrite, xreversed, yreversed):
+    def __init__(self, bot, colors_ignored, colors_not_overwrite):
         self.bot = bot
         self.colors_ignored = colors_ignored
         self.colors_not_overwrite = colors_not_overwrite
+        self.b = False
 
     def apply(self):
         start_x = math.trunc((self.bot.image.width-1)/2)
@@ -100,13 +101,14 @@ class Spiral(Strategy):
         for a,b in reversed(self.generate_spiral(self.bot.image.width, self.bot.image.height)):
             x = start_x + a
             y = start_y + b
-            print(x,y)
             color = EnumColor.rgb(self.bot.image.pix[x, y], True)
             if color.index == -1:
                 continue
             old_color = self.bot.canvas.get_color(self.bot.start_x + x, self.bot.start_y + y)
             if old_color != color and not color in self.colors_ignored and old_color not in self.colors_not_overwrite:
-                self.bot.paint(self.bot.start_x + x, self.bot.start_y + y, color)
+                if self.b or (x%4 == y%4):
+                    self.bot.paint(self.bot.start_x + x, self.bot.start_y + y, color)
+        self.b = not self.b
 
 
 class QuickFill(Strategy):
@@ -116,7 +118,7 @@ class QuickFill(Strategy):
         self.colors_not_overwrite = colors_not_overwrite
         self.xrange = reversed(range(self.bot.image.width)) if xreversed else range(self.bot.image.width)
         self.yrange = reversed(range(self.bot.image.height)) if yreversed else range(self.bot.image.height)
-        self.b = True
+        self.b = False
 
     def apply(self):
         for y in self.yrange:
@@ -126,10 +128,9 @@ class QuickFill(Strategy):
                     continue
                 old_color = self.bot.canvas.get_color(self.bot.start_x + x, self.bot.start_y + y)
                 if old_color != color and not color in self.colors_ignored and old_color not in self.colors_not_overwrite:
-                    if (x % 2 == self.b):
+                    if self.b or (x % 2 != y%2):
                         self.bot.paint(self.bot.start_x + x, self.bot.start_y + y, color)
-            self.b = not self.b
-        self.b = False
+        self.b = not self.b
 
 
 class Sketch(Strategy):
@@ -140,35 +141,6 @@ class Sketch(Strategy):
         self.colors_not_overwrite = colors_not_overwrite
 
     def apply(self):
-        print(I18n.get('# From left to right, from top to bottom,'))
-        near_color = 0
-
-        for y in range(self.bot.image.height):
-            for x in range(self.bot.image.width):
-                color = EnumColor.rgb(self.bot.image.pix[x, y])
-                if color.index == -1:
-                    continue
-                old_color = self.bot.canvas.get_color(self.bot.start_x + x, self.bot.start_y + y)
-                if color != near_color and old_color != color and not color in self.colors_ignored and old_color not in self.colors_not_overwrite:
-                    self.bot.paint(self.bot.start_x + x, self.bot.start_y + y, color)
-                near_color = color
-            near_color = 0
-
-        print(I18n.get('# From right to left, from top to bottom,'))
-
-        near_color = 0
-
-        for y in range(self.bot.image.height):
-            for x in reversed(range(self.bot.image.width)):
-                color = EnumColor.rgb(self.bot.image.pix[x, y])
-                if color.index == -1:
-                    continue
-                old_color = self.bot.canvas.get_color(self.bot.start_x + x, self.bot.start_y + y)
-                if color != near_color and old_color != color and not color in self.colors_ignored and old_color not in self.colors_not_overwrite:
-                    self.bot.paint(self.bot.start_x + x, self.bot.start_y + y, color)
-                near_color = color
-            near_color = 0
-
         print(I18n.get('# From top to bottom, from left to right,'))
 
         near_color = 0
@@ -198,6 +170,35 @@ class Sketch(Strategy):
                     self.bot.paint(self.bot.start_x + x, self.bot.start_y + y, color)
                 near_color = color
             near_color = 0
+        print(I18n.get('# From left to right, from top to bottom,'))
+        near_color = 0
+
+        for y in range(self.bot.image.height):
+            for x in range(self.bot.image.width):
+                color = EnumColor.rgb(self.bot.image.pix[x, y])
+                if color.index == -1:
+                    continue
+                old_color = self.bot.canvas.get_color(self.bot.start_x + x, self.bot.start_y + y)
+                if color != near_color and old_color != color and not color in self.colors_ignored and old_color not in self.colors_not_overwrite:
+                    self.bot.paint(self.bot.start_x + x, self.bot.start_y + y, color)
+                near_color = color
+            near_color = 0
+
+        print(I18n.get('# From right to left, from top to bottom,'))
+
+        near_color = 0
+
+        for y in range(self.bot.image.height):
+            for x in reversed(range(self.bot.image.width)):
+                color = EnumColor.rgb(self.bot.image.pix[x, y])
+                if color.index == -1:
+                    continue
+                old_color = self.bot.canvas.get_color(self.bot.start_x + x, self.bot.start_y + y)
+                if color != near_color and old_color != color and not color in self.colors_ignored and old_color not in self.colors_not_overwrite:
+                    self.bot.paint(self.bot.start_x + x, self.bot.start_y + y, color)
+                near_color = color
+            near_color = 0
+
 
 
 class Status(Strategy):
@@ -644,7 +645,7 @@ class FactoryStrategy(object):
             return Linear(bot, colors_ignored, colors_not_overwrite, xreversed, yreversed)
 
         if strategy == 'spiral':
-            return Spiral(bot, colors_ignored, colors_not_overwrite, xreversed, yreversed)
+            return Spiral(bot, colors_ignored, colors_not_overwrite)
 
         if strategy == 'qf':
             return QuickFill(bot, colors_ignored, colors_not_overwrite, xreversed, yreversed)
