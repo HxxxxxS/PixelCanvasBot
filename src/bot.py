@@ -56,7 +56,8 @@ class Bot(object):
             response = self.pixelio.send_pixel(x, y, color)
         self.storage.add()
         if self.storage.rate_limit():
-            response['waitSeconds'] = 200 + random.random() * 200 # wait 2-400 seconds
+            idle = 600 + random.random() * 300 # wait 10-15 minutes
+            response['waitSeconds'] = idle
         try:
             self.canvas.update(x,y, color)
             print(I18n.get('You painted %s in the %s,%s') % (I18n.get(str(color.name), 'true'), str(x), str(y)))
@@ -95,8 +96,6 @@ class Bot(object):
                 if random.random() > 0.99:
                     h6 = 25 + (random.random() * 444)
                     wait += h6
-            if wait > 2:
-                wait -= 1
 
             h0 = 0.11 + random.random() # Human reaction
             wait += h0
