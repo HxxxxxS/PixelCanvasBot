@@ -69,25 +69,34 @@ class Bot(object):
     def wait_time(self, data={'waitSeconds': None}):
         def complete(i, wait):
             return ((100 * (float(i) / float(wait))) * 50) / 100
-
+        if not data.has_key('waitSeconds'):
+            data['waitSeconds'] = random.random() * 50 + 10
         if data['waitSeconds'] is not None:
             wait = data['waitSeconds']
             if self.stealth:
-                if random.random() > 0.2:
-                    h1 = wait * random.random() / 5
-                    wait += h1
-                if random.random() > 0.82:
-                    h2 = wait * random.random()/10
-                    h3 = 3 + (random.random() * 30)
-                    wait += h2 + h3
+                if random.random() > 0.55:
+                    h1 = max(1,(wait % 3) + random.random()/10)
+                    h12 = random.random() * wait / 20
+                    h12 += (wait % 3) / 10
+                    wait = max(h1,wait+h1) + h12 + 0.88
+                if random.random() > 0.77:
+                    h2 = (wait % 8)/50 + random.random()
+                    h22 = random.random() * wait
+                    wait += h2 + h22
+                if random.random() > 0.97:
+                    h3 = 3 + (random.random() * 15)
+                    wait += h3
                 if random.random() > 0.98:
-                    h4 = 15 + (random.random() * 150)
+                    h4 = 15 + (random.random() * 77)
                     wait += h4
                 if random.random() > 0.99:
-                    h5 = 15 + (random.random() * 250)
+                    h5 = 15 + (random.random() * 150)
                     wait += h5
-            elif wait > 2:
-                wait -= 2
+                if random.random() > 0.99:
+                    h6 = 25 + (random.random() * 444)
+                    wait += h6
+            if wait > 2:
+                wait -= 1
 
             h0 = 0.11 + random.random() # Human reaction
             wait += h0
